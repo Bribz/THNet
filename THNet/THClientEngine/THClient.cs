@@ -59,7 +59,7 @@ namespace THClientEngine
         /// </summary>
         private void InitializeManagers()
         {
-
+            //Initialize Client Managers
         }
         
         /// <summary>
