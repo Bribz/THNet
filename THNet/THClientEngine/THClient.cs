@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ENet;
+using THEngine;
 
 namespace THClientEngine
 {
@@ -120,6 +121,12 @@ namespace THClientEngine
 
                         case EventType.Connect:
                             Log.Write("Client connected to server - ID: " + _serverPeer.ID, LogType.DEBUG);
+
+                            var packet = StringUpdatePacket.Create(1, 0, "hi");
+                            Packet enetPacket = default(Packet);
+                            //enetPacket.Create(packet.ToBytes());
+                            _serverPeer.Send(0, ref enetPacket);
+
                             break;
 
                         case EventType.Disconnect:

@@ -9,6 +9,8 @@ namespace THServerEngine.Managers
 {
     public class ClientManager
     {
+        public static uint nextConnectionID = 1;
+
         private Dictionary<uint, PlayerClient> _Clients;
         private Dictionary<uint, uint> NetID_To_Client;
 
@@ -22,8 +24,26 @@ namespace THServerEngine.Managers
         {
             PlayerClient client = new PlayerClient(userID, peer.ID, peer);
 
-            _Clients.Add(userID, client);
-            NetID_To_Client.Add(peer.ID, userID);
+            if (!_Clients.ContainsKey(userID))
+            {
+                _Clients.Add(userID, client);
+            }
+            else
+            {
+                _Clients[userID].client_peer = peer;
+                _Clients[userID].ENetID = peer.ID;
+                _Clients[userID].UserID = userID;
+            }
+
+            if (!NetID_To_Client.ContainsKey(peer.ID))
+            {
+                NetID_To_Client.Add(peer.ID, userID);
+            }
+            else
+            {
+                NetID_To_Client[peer.ID] = userID;
+            }
+
         }
 
         #region Remove_Client

@@ -13,7 +13,7 @@ namespace THServerEngine.Managers
         BANNED = 0x1,
         KICKED = 0x2,
         ALREADYCONNECTED = 0x3,
-
+        TOKENFAILURE = 0x4,
         NULL = 0xF
     }
 

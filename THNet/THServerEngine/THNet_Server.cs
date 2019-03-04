@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ENet;
+using THEngine;
 using THServerEngine.Databases;
 using THServerEngine.Managers;
 
@@ -129,12 +130,12 @@ namespace THServerEngine
                         case EventType.Connect:
 
                             var errCode = m_ConnectionApprovalManager.ApproveConnection(null, netEvent.Peer.IP);
-                            if (errCode == ConnectionApprovalCode.APPROVED)
+                            if (errCode != ConnectionApprovalCode.APPROVED)
                             {
-                                
+                                /*
                                 var query = new AccountQuery();
                                 query.Create($"read IP_{netEvent.Peer.IP.ToString()}");
-
+                                
                                 int uid = -1;
                                 QueryResponse response = m_AccountDBService.Query(query);
                                 if (response == null)
@@ -147,9 +148,12 @@ namespace THServerEngine
                                 {
                                     uid = BitConverter.ToInt32(response.data, 0);
                                 }
+                                */
 
-                                Log.Write($"Client connected - UID: {uid}, NetID:  {netEvent.Peer.ID}, IP: {netEvent.Peer.IP}", LogType.DEBUG);
-                                m_ClientManager.AddClient(netEvent.Peer, (uint)uid);
+                                uint networkID = ClientManager.nextConnectionID++;
+
+                                Log.Write($"Client connected - UID: {networkID}, NetID:  {netEvent.Peer.ID}, IP: {netEvent.Peer.IP}", LogType.DEBUG);
+                                m_ClientManager.AddClient(netEvent.Peer, networkID);
                             }
                             else
                             {
@@ -174,6 +178,12 @@ namespace THServerEngine
 
                         case EventType.Receive:
                             Log.Write("Packet received from - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP + ", Channel ID: " + netEvent.ChannelID + ", Data length: " + netEvent.Packet.Length, LogType.VERBOSE);
+
+                            byte[] temporaryBuffer = new byte[256];
+                            netEvent.Packet.CopyTo(temporaryBuffer);
+
+                            HandlePacket(temporaryBuffer);
+
                             netEvent.Packet.Dispose();
                             break;
                     }
@@ -203,6 +213,27 @@ namespace THServerEngine
 
                     Log.Write("Server shutdown requested...", LogType.SYSTEM);
                 }
+            }
+        }
+
+        public void HandlePacket(byte[] packetBuffer)
+        {
+            PacketType type = (PacketType)packetBuffer[0];
+
+            switch(type)
+            {
+                case PacketType.NetworkObjectCreation:
+                    if(!_configs.AUTHORITATIVE)
+                    {
+                        //Reflect Object creation to other clients.
+                    }
+                    break;
+                case PacketType.NetworkObjectUpdate:
+                    break;
+                case PacketType.RPC:
+                    break;
+                case PacketType.StringUpdate:
+                    break;
             }
         }
     }

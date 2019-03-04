@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 
 namespace THServerEngine
 {
-    public struct ServerConfigs
+    public class ServerConfigs
     {
         public IPAddress EXTERNAL_IP;
-        public ushort PORT;
-        public int MAX_CLIENTS;
-        public bool LIVE;
+        public ushort PORT = 7735;
+        public int MAX_CLIENTS = 64;
+        public bool LIVE = false;
+
+        public bool AUTHORITATIVE = true;
     }
 }
