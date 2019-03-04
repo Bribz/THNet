@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ENet;
 
@@ -17,15 +19,20 @@ namespace THClientEngine
 
     public class THNet_Client
     {
+        private ConcurrentQueue<int> _inboundEventQueue;
+        private ConcurrentQueue<int> _outboundEventQueue;
+
         private static Host _client;
 
         private IPEndPoint _ipep;
         private Peer _serverPeer;
-        
+
+        private Thread _netThread;
+
         public delegate void DisconnectionEvent();
         public event DisconnectionEvent OnDisconnected;
 
-        public static ConnectionStatus ConnectionStatus { get; private set; }
+        public static volatile ConnectionStatus ConnectionStatus;
 
         public THNet_Client(IPEndPoint ipep, bool auto_run = false)
         {
@@ -35,7 +42,7 @@ namespace THClientEngine
 
             if (auto_run)
             {
-                Start();
+                Connect();
             }
         }
 
@@ -44,6 +51,10 @@ namespace THClientEngine
         /// </summary>
         private void Initialize()
         {
+            // Initialize Event Queue
+            _inboundEventQueue = new ConcurrentQueue<int>();
+            _outboundEventQueue = new ConcurrentQueue<int>();
+
             // Initialize Managers
             InitializeManagers();
 
@@ -61,11 +72,8 @@ namespace THClientEngine
         {
             //Initialize Client Managers
         }
-        
-        /// <summary>
-        /// Start Client.
-        /// </summary>
-        public void Start()
+
+        public void Connect()
         {
             Address address = new Address();
 
@@ -75,12 +83,21 @@ namespace THClientEngine
             _client.Create();
 
             _serverPeer = _client.Connect(address);
-
-            Event netEvent;
-
+             
             Log.Write("Client Started.", LogType.SYSTEM);
 
             ConnectionStatus = ConnectionStatus.CONNECTED;
+
+            _netThread = new Thread(Start);
+            _netThread.Start();
+        }
+        
+        /// <summary>
+        /// Start Client.
+        /// </summary>
+        private void Start()
+        {
+            Event netEvent;
 
             while (ConnectionStatus == ConnectionStatus.CONNECTED)
             {
@@ -125,7 +142,7 @@ namespace THClientEngine
                     }
                 }
 
-                if(Console.KeyAvailable)
+                if (Console.KeyAvailable)
                 {
                     var key = Console.ReadKey();
                     if (key.Key == ConsoleKey.Escape)
@@ -135,8 +152,18 @@ namespace THClientEngine
                 }
             }
 
+            _serverPeer.DisconnectNow(0);
+
+            Log.Write("Client closed connection to Server", LogType.SYSTEM);
+
             _client.Flush();
 
+            /*
+            if (_netThread.IsAlive)
+            {
+                _netThread.Abort();
+            }
+            */
         }
 
         /// <summary>
@@ -145,6 +172,8 @@ namespace THClientEngine
         public void ManualDisconnect()
         {
             ConnectionStatus = ConnectionStatus.DISCONNECTED;
+            
+            //_netThread.Abort();
 
             _serverPeer.DisconnectNow(0);
         }

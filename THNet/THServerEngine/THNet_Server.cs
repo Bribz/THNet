@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ENet;
+using THServerEngine.Databases;
 using THServerEngine.Managers;
 
 namespace THServerEngine
@@ -20,6 +21,8 @@ namespace THServerEngine
         // Managers
         private ConnectionApprovalManager m_ConnectionApprovalManager;
         private ClientManager m_ClientManager;
+        private DatabaseManager m_DBManager;
+        private DBService m_AccountDBService;
 
         // Server
         private Host _server;
@@ -68,11 +71,18 @@ namespace THServerEngine
         {
             Log.Write("Initializing Managers...", LogType.SYSTEM);
 
-            // Initialize ConnectionApprovalManager
-            m_ConnectionApprovalManager = new ConnectionApprovalManager();
-
             // Initialize ClientManager
             m_ClientManager = new ClientManager();
+
+            // Initialize ConnectionApprovalManager
+            m_ConnectionApprovalManager = new ConnectionApprovalManager(m_ClientManager);
+            
+            // Initialize DatabaseManager
+            m_DBManager = new DatabaseManager();
+            m_DBManager.BindDBService("LOCAL_ACCOUNT_DB", new File_DBService(System.IO.Directory.GetCurrentDirectory() + "\\Accounts.txt"));
+
+            //Initialize Accounts service
+            m_AccountDBService = m_DBManager.GetDBService("LOCAL_ACCOUNT_DB");
         }
 
         public void Run()
@@ -121,9 +131,25 @@ namespace THServerEngine
                             var errCode = m_ConnectionApprovalManager.ApproveConnection(null, netEvent.Peer.IP);
                             if (errCode == ConnectionApprovalCode.APPROVED)
                             {
-                                Log.Write($"Client connected - ID:  {netEvent.Peer.ID}, IP: {netEvent.Peer.IP}", LogType.DEBUG);
+                                
+                                var query = new AccountQuery();
+                                query.Create($"read IP_{netEvent.Peer.IP.ToString()}");
 
-                                m_ClientManager.AddClient(netEvent.Peer, 0);
+                                int uid = -1;
+                                QueryResponse response = m_AccountDBService.Query(query);
+                                if (response == null)
+                                {
+                                    uid = new Random().Next(int.MaxValue);
+                                    query.Create($"write IP_{netEvent.Peer.IP.ToString()} {Encoding.UTF8.GetString(BitConverter.GetBytes(uid))}");
+                                    m_AccountDBService.Query(query);
+                                }
+                                else
+                                {
+                                    uid = BitConverter.ToInt32(response.data, 0);
+                                }
+
+                                Log.Write($"Client connected - UID: {uid}, NetID:  {netEvent.Peer.ID}, IP: {netEvent.Peer.IP}", LogType.DEBUG);
+                                m_ClientManager.AddClient(netEvent.Peer, (uint)uid);
                             }
                             else
                             {

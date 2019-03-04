@@ -12,6 +12,7 @@ namespace THServerEngine.Managers
         APPROVED = 0x0,
         BANNED = 0x1,
         KICKED = 0x2,
+        ALREADYCONNECTED = 0x3,
 
         NULL = 0xF
     }
@@ -23,7 +24,7 @@ namespace THServerEngine.Managers
     {
         private Dictionary<ConnectionApprovalCode, string> ConnectionErrors;
 
-        public ConnectionApprovalManager()
+        public ConnectionApprovalManager(ClientManager clientManager)
         {
             InitializeErrorCodes();
         }

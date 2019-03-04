@@ -71,6 +71,9 @@
       <HintPath>..\..\ENet\ENet-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    <Reference Include="Npgsql">
+      <HintPath>C:\Program Files (x86)\PostgreSQL\Npgsql\bin\net451\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -81,9 +84,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Databases\Queries\AccountQuery.cs" />
+    <Compile Include="Databases\Queries\Query.cs" />
+    <Compile Include="Databases\Queries\QueryParameter.cs" />
+    <Compile Include="Databases\Queries\QueryResponse.cs" />
+    <Compile Include="Databases\Services\DBService.cs" />
+    <Compile Include="Databases\Services\File_DBService.cs" />
+    <Compile Include="Databases\Services\PGSQL_DBService.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Managers\ClientManager.cs" />
     <Compile Include="Managers\ConnectionApprovalManager.cs" />
+    <Compile Include="Managers\DatabaseManager.cs" />
     <Compile Include="PlayerClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerConfigs.cs" />
@@ -101,5 +112,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
