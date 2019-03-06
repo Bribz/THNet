@@ -23,11 +23,59 @@ namespace THEngine
         NULL = 0xFF
     }
     
-    [Union(typeof(StringUpdatePacket), typeof(RPCPacket))]
+    [Union(
+        //typeof(ConnectionInformationPacket),
+        //typeof(NetworkObjectCreation),
+        //typeof(NetworkObjectUpdate),
+        typeof(RPCPacket),
+        typeof(StringUpdatePacket), 
+        typeof(LoginPacket)
+        //typeof(LoginAcceptedPacket),
+        //typeof(LoginDeclinedPacket)
+        )]
     public abstract class THPacket
     {
         [UnionKey]
         public abstract PacketType Type { get; }
+    }
+
+    [ZeroFormattable]
+    public class LoginPacket : THPacket
+    {
+        public override PacketType Type
+        {
+            get
+            {
+                return PacketType.StringUpdate;
+            }
+        }
+        [Index(0)]
+        public virtual uint networkID { get; set; }
+        [Index(1)]
+        public virtual string emailHash { get; set; }
+        [Index(2)]
+        public virtual string passwordHash { get; set; }
+
+        public static LoginPacket Create(uint netID, string email, string pass)
+        {
+            LoginPacket retVal = new LoginPacket();
+
+            retVal.networkID = netID;
+            retVal.emailHash = email;
+            retVal.passwordHash = pass;
+
+            return retVal;
+        }
+
+        public static void Serialize(LoginPacket packet, out byte[] output)
+        {
+            output = ZeroFormatterSerializer.Serialize(packet);
+        }
+
+        public static LoginPacket Deserialize(byte[] input)
+        {
+            return ZeroFormatterSerializer.Deserialize<LoginPacket>(input);
+        }
     }
 
     [ZeroFormattable]
@@ -57,8 +105,19 @@ namespace THEngine
 
             return retVal;
         }
+
+        public static void Serialize(StringUpdatePacket packet, out byte[] output)
+        {
+            output = ZeroFormatterSerializer.Serialize(packet);
+        }
+
+        public static StringUpdatePacket Deserialize(byte[] input)
+        {
+            return ZeroFormatterSerializer.Deserialize<StringUpdatePacket>(input);
+        }
     }
 
+    [ZeroFormattable]
     public class RPCPacket : THPacket
     {
         public override PacketType Type
@@ -85,6 +144,16 @@ namespace THEngine
             retVal.data = paramData;
 
             return retVal;
+        }
+
+        public static void Serialize(RPCPacket packet, out byte[] output)
+        {
+            output = ZeroFormatterSerializer.Serialize(packet);
+        }
+
+        public static RPCPacket Deserialize(byte[] input)
+        {
+            return ZeroFormatterSerializer.Deserialize<RPCPacket>(input);
         }
     }
 }

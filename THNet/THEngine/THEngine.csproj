@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="THEncryption.cs" />
     <Compile Include="THPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="THNetEntity.cs" />
