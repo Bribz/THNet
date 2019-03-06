@@ -23,31 +23,33 @@ namespace THEngine
         NULL = 0xFF
     }
     
-    public class THPacket
+    [Union(typeof(StringUpdatePacket), typeof(RPCPacket))]
+    public abstract class THPacket
     {
-        public PacketType Type = PacketType.NULL;
-
-        public virtual byte[] Serialize()
-        {
-            return null;
-        }
-
-        public virtual void Deserialize(byte[] data)
-        {
-
-        }
+        [UnionKey]
+        public abstract PacketType Type { get; }
     }
-    
+
+    [ZeroFormattable]
     public class StringUpdatePacket : THPacket
     {
-        public uint networkID;
-        public byte stringID;
-        public string value;
+        public override PacketType Type
+        {
+            get
+            {
+                return PacketType.StringUpdate;
+            }
+        }
+        [Index(0)]
+        public virtual uint networkID { get; set; }
+        [Index(1)]
+        public virtual byte stringID { get; set; }
+        [Index(2)]
+        public virtual string value { get; set; }
 
         public static StringUpdatePacket Create(uint netID, byte strID, string val)
         {
             StringUpdatePacket retVal = new StringUpdatePacket();
-            retVal.Type = PacketType.StringUpdate;
 
             retVal.networkID = netID;
             retVal.stringID = strID;
@@ -55,44 +57,34 @@ namespace THEngine
 
             return retVal;
         }
-
-        public override byte[] Serialize()
-        {
-            return null;
-        }
-
-        public override void Deserialize(byte[] data)
-        {
-
-        }
     }
 
     public class RPCPacket : THPacket
     {
-        public uint networkID;
-        public byte RPC_ID;
-        public byte[] data;
+        public override PacketType Type
+        {
+            get
+            {
+                return PacketType.RPC;
+            }
+        }
+
+        [Index(0)]
+        public virtual uint networkID { get; set; }
+        [Index(1)]
+        public virtual byte RPC_ID { get; set; }
+        [Index(2)]
+        public virtual byte[] data { get; set; }
 
         public static RPCPacket Create(uint netID, byte rpcID, byte[] paramData)
         {
             RPCPacket retVal = new RPCPacket();
-            retVal.Type = PacketType.RPC;
 
             retVal.networkID = netID;
             retVal.RPC_ID = rpcID;
             retVal.data = paramData;
 
             return retVal;
-        }
-
-        public override byte[] Serialize()
-        {
-            return null;
-        }
-
-        public override void Deserialize(byte[] data)
-        {
-
         }
     }
 }
