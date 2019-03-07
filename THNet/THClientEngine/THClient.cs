@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ENet;
 using THEngine;
+using ZeroFormatter;
+using ZeroFormatter.Formatters;
 
 namespace THClientEngine
 {
@@ -52,6 +54,10 @@ namespace THClientEngine
         /// </summary>
         private void Initialize()
         {
+            //Initialize Serialization Unions
+            ZeroFormatterInitializer.Register();
+            THPacket.AppendDynamicUnionResolver();
+
             // Initialize Event Queue
             _inboundEventQueue = new ConcurrentQueue<int>();
             _outboundEventQueue = new ConcurrentQueue<int>();
@@ -122,9 +128,11 @@ namespace THClientEngine
                         case EventType.Connect:
                             Log.Write("Client connected to server - ID: " + _serverPeer.ID, LogType.DEBUG);
 
-                            var packet = StringUpdatePacket.Create(1, 0, "hi");
+                            var packet = LoginPacket.Create(1,"user", "pass");
                             Packet enetPacket = default(Packet);
-                            //enetPacket.Create(packet.ToBytes());
+                            byte[] test = null;
+                            THPacket.Serialize(packet, out test);
+                            enetPacket.Create(test, test.Length, PacketFlags.Reliable);
                             _serverPeer.Send(0, ref enetPacket);
 
                             break;
@@ -133,7 +141,10 @@ namespace THClientEngine
                             Log.Write("Client disconnected from server", LogType.DEBUG);
 
                             // Disconnected Event
-                            OnDisconnected();
+                            if (OnDisconnected != null)
+                            {
+                                OnDisconnected();
+                            }
 
                             ConnectionStatus = ConnectionStatus.DISCONNECTED;
                             break;
@@ -157,6 +168,8 @@ namespace THClientEngine
                         ManualDisconnect();
                     }
                 }
+
+                NetworkUpdate();
             }
 
             _serverPeer.DisconnectNow(0);
@@ -183,6 +196,21 @@ namespace THClientEngine
             //_netThread.Abort();
 
             _serverPeer.DisconnectNow(0);
+        }
+
+        /// <summary>
+        /// Send out network updates through queue.
+        /// </summary>
+        private void NetworkUpdate()
+        {
+            var packet = RPCPacket.Create(0, (byte)new Random().Next(0x0, 0x255), null);
+            Packet enetPacket = default(Packet);
+            byte[] test = null;
+            THPacket.Serialize(packet, out test);
+            enetPacket.Create(test, test.Length, PacketFlags.None);
+            _serverPeer.Send(0, ref enetPacket);
+
+            Thread.Sleep(16);
         }
     }
 }

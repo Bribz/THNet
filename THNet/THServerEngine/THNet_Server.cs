@@ -7,6 +7,7 @@ using ENet;
 using THEngine;
 using THServerEngine.Databases;
 using THServerEngine.Managers;
+using ZeroFormatter;
 
 namespace THServerEngine
 {
@@ -56,6 +57,10 @@ namespace THServerEngine
                 MAX_CLIENTS = max_clients,
                 PORT = 7735
             };
+
+            //Initialize Serialization Unions
+            ZeroFormatterInitializer.Register();
+            THPacket.AppendDynamicUnionResolver();
 
             // Initialize Server Managers
             InitializeManagers();
@@ -130,7 +135,7 @@ namespace THServerEngine
                         case EventType.Connect:
 
                             var errCode = m_ConnectionApprovalManager.ApproveConnection(null, netEvent.Peer.IP);
-                            if (errCode != ConnectionApprovalCode.APPROVED)
+                            if (errCode == ConnectionApprovalCode.APPROVED)
                             {
                                 /*
                                 var query = new AccountQuery();
@@ -179,7 +184,7 @@ namespace THServerEngine
                         case EventType.Receive:
                             Log.Write("Packet received from - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP + ", Channel ID: " + netEvent.ChannelID + ", Data length: " + netEvent.Packet.Length, LogType.VERBOSE);
 
-                            byte[] temporaryBuffer = new byte[256];
+                            byte[] temporaryBuffer = new byte[netEvent.Packet.Length];
                             netEvent.Packet.CopyTo(temporaryBuffer);
 
                             HandlePacket(temporaryBuffer);
@@ -218,23 +223,31 @@ namespace THServerEngine
 
         public void HandlePacket(byte[] packetBuffer)
         {
-            PacketType type = (PacketType)packetBuffer[0];
-
-            switch(type)
+            IPacket packet = THPacket.Deserialize(packetBuffer);
+            
+            switch(packet.Type)
             {
-                case PacketType.NetworkObjectCreation:
+                /*case PacketType.NetworkObjectCreation:
                     if(!_configs.AUTHORITATIVE)
                     {
                         //Reflect Object creation to other clients.
                     }
                     break;
+                    
                 case PacketType.NetworkObjectUpdate:
                     break;
+                    */
                 case PacketType.RPC:
+                    Log.Write("RPCPacket Received!", LogType.VERBOSE);
                     break;
                 case PacketType.StringUpdate:
+                    Log.Write("StringUpdatePacket Received!", LogType.VERBOSE);
+                    break;
+                case PacketType.Login:
+                    Log.Write("LoginPacket Received!", LogType.VERBOSE);
                     break;
             }
+
         }
     }
 }

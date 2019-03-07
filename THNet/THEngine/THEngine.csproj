@@ -98,7 +98,7 @@
     <Compile Include="THNetEntity.cs" />
     <Compile Include="THPlayer.cs" />
     <Compile Include="THVector3.cs" />
-    <Compile Include="ZeroFormatterGenerated.cs" />
+    <Compile Include="ZFPacketCompiled.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="enet.dll">
@@ -110,7 +110,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>call $(SolutionDir)packages\ZeroFormatter.Interfaces.1.6.4\tools\zfc.exe -i "$(ProjectPath)" -o "($ProjectDir)ZeroFormatterGenerated.cs"
+    <PreBuildEvent>call $(SolutionDir)packages\ZeroFormatter.Interfaces.1.6.4\tools\zfc.exe -i "$(ProjectPath)" -o "$(ProjectDir)ZeroFormatterGenerated.cs"
 </PreBuildEvent>
   </PropertyGroup>
 </Project>

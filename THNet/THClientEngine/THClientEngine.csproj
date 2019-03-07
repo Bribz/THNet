@@ -81,6 +81,12 @@
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\Unity_2018216f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="ZeroFormatter">
+      <HintPath>..\THEngine\bin\x64\Debug\ZeroFormatter.dll</HintPath>
+    </Reference>
+    <Reference Include="ZeroFormatter.Interfaces">
+      <HintPath>..\THEngine\bin\x64\Debug\ZeroFormatter.Interfaces.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Log.cs" />

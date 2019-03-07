@@ -4,51 +4,85 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ZeroFormatter;
+using ZeroFormatter.Formatters;
 
 namespace THEngine
 {
     public enum PacketType : byte
     {
         ConnectionInformation = 0x0,
-        NetworkObjectCreation = 0x1,
-        NetworkObjectUpdate = 0x2,
-        RPC = 0x3,
+        NetworkObjectCreation,
+        NetworkObjectUpdate,
+        RPC,
 
-        StringUpdate = 0xE,
+        StringUpdate,
 
-        Login = 0xF,
-        LoginAccepted = 0x11,
-        LoginDeclined = 0x12,
+        Login,
+        LoginAccepted,
+        LoginDeclined,
 
         NULL = 0xFF
     }
     
-    [Union(
-        //typeof(ConnectionInformationPacket),
-        //typeof(NetworkObjectCreation),
-        //typeof(NetworkObjectUpdate),
-        typeof(RPCPacket),
-        typeof(StringUpdatePacket), 
-        typeof(LoginPacket)
-        //typeof(LoginAcceptedPacket),
-        //typeof(LoginDeclinedPacket)
-        )]
-    public abstract class THPacket
+    public static class THPacket
     {
-        [UnionKey]
-        public abstract PacketType Type { get; }
+        public static void Serialize(IPacket packet, out byte[] output)
+        {
+            output = ZeroFormatterSerializer.Serialize(packet);
+        }
+
+        public static IPacket Deserialize(byte[] input)
+        {
+            return ZeroFormatterSerializer.Deserialize<IPacket>(input);
+        }
+
+        /*
+        public static PacketType GetTypeFromByte(byte b)
+        {
+            return (PacketType)b;
+        }
+        */
+
+        public static void AppendDynamicUnionResolver()
+        {
+            Formatter.AppendDynamicUnionResolver((unionType, resolver) =>
+            {
+                if (unionType == typeof(IPacket))
+                {
+                    resolver.RegisterUnionKeyType(typeof(byte));
+                    resolver.RegisterSubType(key: (byte)PacketType.RPC, subType: typeof(RPCPacket));
+                    resolver.RegisterSubType(key: (byte)PacketType.StringUpdate, subType: typeof(StringUpdatePacket));
+                    resolver.RegisterSubType(key: (byte)PacketType.Login, subType: typeof(LoginPacket));
+                    resolver.RegisterFallbackType(typeof(NullPacket));
+                }
+            });
+        }
+    }
+    
+    [DynamicUnion]
+    public class IPacket
+    {
+        //[UnionKey]
+        [IgnoreFormat]
+        public virtual PacketType Type => PacketType.NULL;
     }
 
-    [ZeroFormattable]
-    public class LoginPacket : THPacket
+    public class NullPacket : IPacket
     {
-        public override PacketType Type
-        {
-            get
-            {
-                return PacketType.StringUpdate;
-            }
-        }
+        [IgnoreFormat]
+        public virtual PacketType Type => PacketType.NULL;
+
+        [Index(0)]
+        public virtual byte[] netID{ get; set; }
+    }
+
+    
+    [ZeroFormattable]
+    public class LoginPacket : IPacket
+    {
+        [IgnoreFormat]
+        public override PacketType Type => PacketType.Login;
+
         [Index(0)]
         public virtual uint networkID { get; set; }
         [Index(1)]
@@ -66,28 +100,14 @@ namespace THEngine
 
             return retVal;
         }
-
-        public static void Serialize(LoginPacket packet, out byte[] output)
-        {
-            output = ZeroFormatterSerializer.Serialize(packet);
-        }
-
-        public static LoginPacket Deserialize(byte[] input)
-        {
-            return ZeroFormatterSerializer.Deserialize<LoginPacket>(input);
-        }
     }
 
     [ZeroFormattable]
-    public class StringUpdatePacket : THPacket
+    public class StringUpdatePacket : IPacket
     {
-        public override PacketType Type
-        {
-            get
-            {
-                return PacketType.StringUpdate;
-            }
-        }
+        [IgnoreFormat]
+        public override PacketType Type => PacketType.StringUpdate;
+
         [Index(0)]
         public virtual uint networkID { get; set; }
         [Index(1)]
@@ -105,28 +125,13 @@ namespace THEngine
 
             return retVal;
         }
-
-        public static void Serialize(StringUpdatePacket packet, out byte[] output)
-        {
-            output = ZeroFormatterSerializer.Serialize(packet);
-        }
-
-        public static StringUpdatePacket Deserialize(byte[] input)
-        {
-            return ZeroFormatterSerializer.Deserialize<StringUpdatePacket>(input);
-        }
     }
 
     [ZeroFormattable]
-    public class RPCPacket : THPacket
+    public class RPCPacket : IPacket
     {
-        public override PacketType Type
-        {
-            get
-            {
-                return PacketType.RPC;
-            }
-        }
+        [IgnoreFormat]
+        public override PacketType Type => PacketType.RPC;
 
         [Index(0)]
         public virtual uint networkID { get; set; }
@@ -144,16 +149,6 @@ namespace THEngine
             retVal.data = paramData;
 
             return retVal;
-        }
-
-        public static void Serialize(RPCPacket packet, out byte[] output)
-        {
-            output = ZeroFormatterSerializer.Serialize(packet);
-        }
-
-        public static RPCPacket Deserialize(byte[] input)
-        {
-            return ZeroFormatterSerializer.Deserialize<RPCPacket>(input);
         }
     }
 }

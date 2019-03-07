@@ -1,4 +1,4 @@
-#pragma warning disable 618
+﻿#pragma warning disable 618
 #pragma warning disable 612
 #pragma warning disable 414
 #pragma warning disable 168
@@ -19,19 +19,19 @@ namespace ZeroFormatter
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Register()
         {
-            if(registered) return;
+            if (registered) return;
             registered = true;
             // Enums
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.THHash.HashType>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.THHash_HashTypeFormatter<ZeroFormatter.Formatters.DefaultResolver>());
             ZeroFormatter.Comparers.ZeroFormatterEqualityComparer<global::THEngine.THHash.HashType>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.THHash_HashTypeEqualityComparer());
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.THHash.HashType?>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.NullableTHHash_HashTypeFormatter<ZeroFormatter.Formatters.DefaultResolver>());
             ZeroFormatter.Comparers.ZeroFormatterEqualityComparer<global::THEngine.THHash.HashType?>.Register(new NullableEqualityComparer<global::THEngine.THHash.HashType>());
-            
+
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.PacketType>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.PacketTypeFormatter<ZeroFormatter.Formatters.DefaultResolver>());
             ZeroFormatter.Comparers.ZeroFormatterEqualityComparer<global::THEngine.PacketType>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.PacketTypeEqualityComparer());
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.PacketType?>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.NullablePacketTypeFormatter<ZeroFormatter.Formatters.DefaultResolver>());
             ZeroFormatter.Comparers.ZeroFormatterEqualityComparer<global::THEngine.PacketType?>.Register(new NullableEqualityComparer<global::THEngine.PacketType>());
-            
+
             // Objects
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.LoginPacket>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.LoginPacketFormatter<ZeroFormatter.Formatters.DefaultResolver>());
             ZeroFormatter.Formatters.Formatter<ZeroFormatter.Formatters.DefaultResolver, global::THEngine.StringUpdatePacket>.Register(new ZeroFormatter.DynamicObjectSegments.THEngine.StringUpdatePacketFormatter<ZeroFormatter.Formatters.DefaultResolver>());
@@ -105,7 +105,7 @@ namespace ZeroFormatter.DynamicObjectSegments.THEngine
     public class LoginPacketObjectSegment<TTypeResolver> : global::THEngine.LoginPacket, IZeroFormatterSegment
         where TTypeResolver : ITypeResolver, new()
     {
-        static readonly int[] __elementSizes = new int[]{ 4, 0, 0 };
+        static readonly int[] __elementSizes = new int[] { 4, 0, 0 };
 
         readonly ArraySegment<byte> __originalBytes;
         readonly global::ZeroFormatter.DirtyTracker __tracker;
@@ -247,7 +247,7 @@ namespace ZeroFormatter.DynamicObjectSegments.THEngine
     public class StringUpdatePacketObjectSegment<TTypeResolver> : global::THEngine.StringUpdatePacket, IZeroFormatterSegment
         where TTypeResolver : ITypeResolver, new()
     {
-        static readonly int[] __elementSizes = new int[]{ 4, 1, 0 };
+        static readonly int[] __elementSizes = new int[] { 4, 1, 0 };
 
         readonly ArraySegment<byte> __originalBytes;
         readonly global::ZeroFormatter.DirtyTracker __tracker;
@@ -387,7 +387,7 @@ namespace ZeroFormatter.DynamicObjectSegments.THEngine
     public class RPCPacketObjectSegment<TTypeResolver> : global::THEngine.RPCPacket, IZeroFormatterSegment
         where TTypeResolver : ITypeResolver, new()
     {
-        static readonly int[] __elementSizes = new int[]{ 4, 1, 0 };
+        static readonly int[] __elementSizes = new int[] { 4, 1, 0 };
 
         readonly ArraySegment<byte> __originalBytes;
         readonly global::ZeroFormatter.DirtyTracker __tracker;
